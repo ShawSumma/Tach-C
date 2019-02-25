@@ -155,7 +155,7 @@ struct tach_ast_node_operator *tach_ast_read_operator(struct tach_tokenize_token
         tokens->token_index ++;
     }
 
-    tokens->token_index = end;
+    tokens->token_index = end + 1;
     return return_operator;
 }
 

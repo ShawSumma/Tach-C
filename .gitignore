@@ -3,3 +3,4 @@ output/compiler
 output/compiled
 .vscode
 run.sh
+old/*
