@@ -100,6 +100,7 @@ struct tach_ast_node_block *tach_ast_read_block(struct tach_tokenize_token_group
         tokens->token_index ++;
     }
     else {
+        fprintf(stderr, "%s\n", tokens->tokens[tokens->token_index].token_string);
         fprintf(stderr, "no non block statements yet\n");
         exit(1);
         // return_block->statement_count = 1;
@@ -120,43 +121,30 @@ struct tach_ast_node_statement *tach_ast_read_statement(struct tach_tokenize_tok
             flow_change->expression = tach_ast_read_expression(tokens);
             flow_change->type = TACH_AST_NODE_FLOW_CHANGE_RETURN;
             return_statement->child.flow_change_value = flow_change;
+            tokens->token_index ++;
+        }
+        else if (strcmp(first.token_string, "if") == 0) {
+            tokens->token_index += 2;
+            return_statement->type = TACH_AST_NODE_STATEMENT_FLOW_CONTROL;
+            return_statement->child.flow_control_value = tach_malloc(sizeof(struct tach_ast_node_flow_control));
+            return_statement->child.flow_control_value->flow_type = TACH_AST_NODE_FLOW_CONTROL_IF;
+            return_statement->child.flow_control_value->test = tach_ast_read_expression(tokens);
+            tokens->token_index ++;
+            return_statement->child.flow_control_value->flow_body = tach_ast_read_block(tokens);
         }
         else {
             return_statement->type = TACH_AST_NODE_STATEMENT_EXPRESSION;
             return_statement->child.expression_value = tach_ast_read_expression(tokens);
+            tokens->token_index ++;
         }
-        tokens->token_index ++;
     }
     else {
         // return_statement->type = TACH_AST_NODE_STATEMENT_EXPRESSION;
         // return_statement->child.expression_value = tach_ast_read_expression(tokens);
-        printf("%d\n", first.token_kind);
         fprintf(stderr, "expected statement\n");
         exit(1);
     }
     return return_statement;
-}
-
-struct tach_ast_node_operator *tach_ast_read_operator(struct tach_tokenize_token_group *tokens, long begin, long end, enum tach_ast_operator_level level) {
-    struct tach_ast_node_operator *return_operator = tach_malloc(sizeof(struct tach_ast_node_operator));
-    return_operator->oper = tach_string_copy(tokens->tokens[begin+1].token_string);
-    return_operator->child_count = 2;
-    return_operator->children = tach_malloc(sizeof(struct tach_ast_node_expression *)*return_operator->child_count);
-
-    tokens->token_index = begin;
-
-    return_operator->children[0] = tach_ast_read_expression_single(tokens);
-    while (1) {
-        if (tokens->tokens[tokens->token_index].token_kind == TACH_TOKENIZE_TOKEN_KIND_OPERATOR) {
-            tokens->token_index ++;
-            return_operator->children[1] = tach_ast_read_expression(tokens);
-            break;
-        }
-        tokens->token_index ++;
-    }
-
-    tokens->token_index = end + 1;
-    return return_operator;
 }
 
 struct tach_ast_node_expression *tach_ast_read_expression_single(struct tach_tokenize_token_group *tokens) {
@@ -207,28 +195,11 @@ struct tach_ast_node_expression *tach_ast_read_expression_single(struct tach_tok
     return return_expression;
 }
 
-struct tach_ast_node_expression *tach_ast_read_expression(struct tach_tokenize_token_group *tokens) {    
-    char ismulti = 0;
-    long begin_token_index = tokens->token_index;
-    while (tokens->tokens[tokens->token_index+1].token_kind == TACH_TOKENIZE_TOKEN_KIND_OPERATOR) {
-        ismulti = 1;
-        tokens->token_index += 2;
+struct tach_ast_node_expression *tach_ast_read_expression(struct tach_tokenize_token_group *tokens) {  
+    long begin = tokens->token_index;
+    struct tach_ast_node_expression *return_expression = tach_ast_read_expression_single(tokens);
+    if (tokens->tokens[tokens->token_index].token_kind == TACH_TOKENIZE_TOKEN_KIND_OPERATOR) {
+        tokens->token_index ++;
     }
-    if (ismulti) {
-        struct tach_ast_node_expression *return_expression = tach_malloc(sizeof(struct tach_ast_node_expression));
-        if (tokens->token_index - begin_token_index != 1) {
-            return_expression->type = TACH_AST_NODE_EXPRESSION_TYPE_OPERATOR;
-            struct tach_ast_node_operator *operator = tach_ast_read_operator(tokens, begin_token_index, tokens->token_index, TACH_AST_OPERATOR_LEVEL_MULT);
-            return_expression->child.operator = operator;
-        }
-        else {
-            tokens->token_index = begin_token_index;
-            return tach_ast_read_expression_single(tokens);
-        }
-        return return_expression;
-    }
-    else {
-        struct tach_ast_node_expression *return_expression = tach_ast_read_expression_single(tokens);
-        return return_expression;
-    }
+    return return_expression;
 }

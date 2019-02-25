@@ -1,7 +1,7 @@
 #include "back.h"
 
 void tach_back_c_program_compile(struct tach_ast_node_file_program *program, struct tach_back_c_state *state) {
-    fprintf(state->file, "#!/usr/bin/env lua5.1\n");
+    fprintf(state->file, "#!/usr/bin/env luajit\n");
     fprintf(state->file, "require(\"output/lib\")\n");
     for (long i = 0; i < program->function_decl_count; i++) {
         tach_back_c_function_compile(program->function_decls[i], state);
@@ -80,7 +80,24 @@ void tach_back_c_flow_change_compile(struct tach_ast_node_flow_change *ast, stru
 }
 
 void tach_back_c_flow_control_compile(struct tach_ast_node_flow_control *ast, struct tach_back_c_state *state) {
-
+    switch(ast->flow_type) {
+        case TACH_AST_NODE_FLOW_CONTROL_IF: {
+            fprintf(state->file, "if ");
+            fprintf(state->file, "bool(");
+            tach_back_c_expression_compile(ast->test, state);
+            fprintf(state->file, ")");
+            fprintf(state->file, "then");
+            tach_back_c_state_p_newline(state);
+            tach_back_c_block_compile(ast->flow_body, state);
+            tach_back_c_state_m_newline(state);
+            fprintf(state->file, "end");
+            break;
+        }
+        default: {
+            fprintf(stderr, "unsupported flow change\n");
+            exit(1);
+        }
+    }
 }
 
 void tach_back_c_expression_compile(struct tach_ast_node_expression *ast, struct tach_back_c_state *state) {

@@ -81,7 +81,6 @@ struct tach_ast_node_block *tach_ast_read_block(struct tach_tokenize_token_group
 struct tach_ast_node_statement *tach_ast_read_statement(struct tach_tokenize_token_group *tokens);
 struct tach_ast_node_expression *tach_ast_read_expression_single(struct tach_tokenize_token_group *tokens);
 struct tach_ast_node_expression *tach_ast_read_expression(struct tach_tokenize_token_group *tokens);
-struct tach_ast_node_operator *tach_ast_read_operator(struct tach_tokenize_token_group *tokens, long begin, long end, enum tach_ast_operator_level);
 
 struct tach_ast_node_function_declaration {
     struct tach_ast_node_ctype *return_type;
@@ -119,7 +118,7 @@ struct tach_ast_node_expression {
 struct tach_ast_node_flow_control {
     enum tach_ast_node_flow_control_type flow_type;
     struct tach_ast_node_expression *test;
-    struct tach_ast_node_flow_control *flow_else;
+    struct tach_ast_node_block *flow_body;
 };
 
 struct tach_ast_node_flow_change {

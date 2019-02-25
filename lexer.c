@@ -99,6 +99,12 @@ struct tach_tokenize_token tach_tokenize_read_token(FILE *input_file) {
         || next_char == '_') {
         return tach_tokenize_read_token_as_identifier(input_file);
     }
+    if (next_char == '#') {
+        while (next_char != '\n') {
+            next_char = getc(input_file);
+        }
+        return tach_tokenize_read_token(input_file);
+    }
     if (next_char == '"') {
         return tach_tokenize_read_token_as_string(input_file);
     }
@@ -176,6 +182,17 @@ struct tach_tokenize_token tach_tokenize_read_token(FILE *input_file) {
         }
         else {
             return tach_tokenize_create_token_string(TACH_TOKENIZE_TOKEN_KIND_OPERATOR, "/");
+        }
+    }
+    if (next_char == '<') {
+        getc(input_file);
+        next_char = tach_tokenize_peek_pfile(input_file);
+        if (next_char == '=') {
+            getc(input_file);
+            return tach_tokenize_create_token_string(TACH_TOKENIZE_TOKEN_KIND_OPERATOR, "<=");
+        }
+        else {
+            return tach_tokenize_create_token_string(TACH_TOKENIZE_TOKEN_KIND_OPERATOR, "<");
         }
     }
     char skip_char = getc(input_file);
