@@ -132,6 +132,11 @@ struct tach_ast_node_statement *tach_ast_read_statement(struct tach_tokenize_tok
             tokens->token_index ++;
             return_statement->child.flow_control_value->flow_body = tach_ast_read_block(tokens);
         }
+        else if (first.token_kind == TACH_TOKENIZE_TOKEN_KIND_IDENTIFIER
+            && tokens->tokens[tokens->token_index].token_kind == TACH_TOKENIZE_TOKEN_KIND_IDENTIFIER) {
+            printf("declaration\n");
+            exit(1);
+        }
         else {
             return_statement->type = TACH_AST_NODE_STATEMENT_EXPRESSION;
             return_statement->child.expression_value = tach_ast_read_expression(tokens);
@@ -146,6 +151,21 @@ struct tach_ast_node_statement *tach_ast_read_statement(struct tach_tokenize_tok
     }
     return return_statement;
 }
+
+// struct tach_ast_node_operator *tach_ast_read_operator(struct tach_tokenize_token_group *tokens, long begin, long end, enum tach_ast_operator_level level) {
+//     struct tach_ast_node_operator *return_operator = tach_malloc(sizeof(struct tach_ast_node_operator));
+//     return_operator->child_count = 2;
+//     return_operator->children = tach_malloc(sizeof(struct tach_ast_node_expression *)*return_operator->child_count);
+//     tokens->token_index = begin;
+//     printf("%s\n", tokens->tokens[tokens->token_index].token_string);
+//     return_operator->children[0] = tach_ast_read_expression_single(tokens);
+//     printf("%s\n", tokens->tokens[tokens->token_index].token_string);
+//     return_operator->oper = tach_string_copy(tokens->tokens[tokens->token_index].token_string);
+//     tokens->token_index ++;
+//     printf("%s\n", tokens->tokens[tokens->token_index].token_string);
+//     return_operator->children[1] = tach_ast_read_expression(tokens);
+//     return return_operator;
+// }
 
 struct tach_ast_node_expression *tach_ast_read_expression_single(struct tach_tokenize_token_group *tokens) {
     struct tach_ast_node_expression *return_expression = tach_malloc(sizeof(struct tach_ast_node_expression));
@@ -199,7 +219,15 @@ struct tach_ast_node_expression *tach_ast_read_expression(struct tach_tokenize_t
     long begin = tokens->token_index;
     struct tach_ast_node_expression *return_expression = tach_ast_read_expression_single(tokens);
     if (tokens->tokens[tokens->token_index].token_kind == TACH_TOKENIZE_TOKEN_KIND_OPERATOR) {
+        struct tach_ast_node_operator *return_operator = tach_malloc(sizeof(struct tach_ast_node_operator));
+        return_operator->children = tach_malloc(sizeof(struct tach_ast_node_expression *) * 2);
+        return_operator->children[0] = return_expression;
+        return_operator->oper = tokens->tokens[tokens->token_index].token_string;
         tokens->token_index ++;
+        return_operator->children[1] = tach_ast_read_expression(tokens);
+        return_expression = tach_malloc(sizeof(struct tach_ast_node_expression));
+        return_expression->type = TACH_AST_NODE_EXPRESSION_TYPE_OPERATOR;
+        return_expression->child.operator =return_operator;
     }
     return return_expression;
 }
