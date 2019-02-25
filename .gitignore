@@ -1,0 +1,5 @@
+output/a.out
+output/compiler
+output/compiled
+.vscode
+run.sh
