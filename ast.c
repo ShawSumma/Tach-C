@@ -100,12 +100,12 @@ struct tach_ast_node_block *tach_ast_read_block(struct tach_tokenize_token_group
         tokens->token_index ++;
     }
     else {
-        fprintf(stderr, "%s\n", tokens->tokens[tokens->token_index].token_string);
-        fprintf(stderr, "no non block statements yet\n");
-        exit(1);
-        // return_block->statement_count = 1;
-        // return_block->statements = tach_malloc(sizeof(struct tach_ast_node_statement*)*1);
-        // return_block->statements[0] = tach_ast_read_statement(tokens);
+        // fprintf(stderr, "%s\n", tokens->tokens[tokens->token_index].token_string);
+        // fprintf(stderr, "no non block statements yet\n");
+        // exit(1);
+        return_block->statement_count = 1;
+        return_block->statements = tach_malloc(sizeof(struct tach_ast_node_statement*)*1);
+        return_block->statements[0] = tach_ast_read_statement(tokens);
     }
     return return_block;
 }
@@ -131,11 +131,6 @@ struct tach_ast_node_statement *tach_ast_read_statement(struct tach_tokenize_tok
             return_statement->child.flow_control_value->test = tach_ast_read_expression(tokens);
             tokens->token_index ++;
             return_statement->child.flow_control_value->flow_body = tach_ast_read_block(tokens);
-        }
-        else if (first.token_kind == TACH_TOKENIZE_TOKEN_KIND_IDENTIFIER
-            && tokens->tokens[tokens->token_index].token_kind == TACH_TOKENIZE_TOKEN_KIND_IDENTIFIER) {
-            printf("declaration\n");
-            exit(1);
         }
         else {
             return_statement->type = TACH_AST_NODE_STATEMENT_EXPRESSION;
